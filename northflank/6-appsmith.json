@@ -1,0 +1,60 @@
+{
+  "apiVersion": "v1",
+  "spec": {
+    "kind": "CombinedService",
+    "name": "appsmith",
+    "billing": {
+      "deploymentPlan": "nf-compute-50"
+    },
+    "deployment": {
+      "instances": 1,
+      "docker": {
+        "configType": "customCommand"
+      },
+      "internal": {
+        "id": "appsmith",
+        "branch": "master",
+        "projectType": "dockerfile",
+        "dockerfile": {
+          "buildEngine": "kaniko",
+          "dockerFilePath": "/container/Dockerfile.appsmith",
+          "dockerWorkDir": "/"
+        }
+      }
+    },
+    "ports": [
+      {
+        "name": "web",
+        "internalPort": 80,
+        "public": true,
+        "protocol": "HTTP",
+        "security": {
+          "policies": []
+        },
+        "domains": []
+      }
+    ],
+    "runtimeEnvironment": {
+      "APPSMITH_ENCRYPTION_PASSWORD": "{{APPSMITH_ENCRYPTION_PASSWORD}}",
+      "APPSMITH_ENCRYPTION_SALT": "{{APPSMITH_ENCRYPTION_SALT}}",
+      "APPSMITH_MONGODB_URI": "{{MONGODB_URI}}",
+      "APPSMITH_REDIS_URL": "{{REDIS_URL}}",
+      "APPSMITH_MAIL_ENABLED": "false",
+      "APPSMITH_DISABLE_TELEMETRY": "true"
+    },
+    "healthChecks": [
+      {
+        "name": "http-health",
+        "path": "/api/v1/health",
+        "port": 80,
+        "protocol": "HTTP",
+        "interval": 30,
+        "timeout": 10,
+        "failureThreshold": 3,
+        "successThreshold": 1,
+        "initialDelay": 60
+      }
+    ]
+  },
+  "description": "Low-code platform for building dashboards and admin panels"
+}

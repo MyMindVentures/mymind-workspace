@@ -1,0 +1,63 @@
+{
+  "apiVersion": "v1",
+  "spec": {
+    "kind": "CombinedService",
+    "name": "budibase",
+    "billing": {
+      "deploymentPlan": "nf-compute-50"
+    },
+    "deployment": {
+      "instances": 1,
+      "docker": {
+        "configType": "customCommand"
+      },
+      "internal": {
+        "id": "budibase",
+        "branch": "master",
+        "projectType": "dockerfile",
+        "dockerfile": {
+          "buildEngine": "kaniko",
+          "dockerFilePath": "/container/Dockerfile.budibase",
+          "dockerWorkDir": "/"
+        }
+      }
+    },
+    "ports": [
+      {
+        "name": "web",
+        "internalPort": 80,
+        "public": true,
+        "protocol": "HTTP",
+        "security": {
+          "policies": []
+        },
+        "domains": []
+      }
+    ],
+    "runtimeEnvironment": {
+      "BUDIBASE_ENVIRONMENT": "PRODUCTION",
+      "PORT": "80",
+      "MINIO_ENABLED": "0",
+      "COUCH_DB_URL": "{{COUCHDB_URL}}",
+      "REDIS_URL": "{{REDIS_URL}}",
+      "INTERNAL_API_KEY": "{{BUDIBASE_INTERNAL_API_KEY}}",
+      "JWT_SECRET": "{{BUDIBASE_JWT_SECRET}}",
+      "MULTI_TENANCY": "0",
+      "DISABLE_ACCOUNT_PORTAL": "true"
+    },
+    "healthChecks": [
+      {
+        "name": "http-health",
+        "path": "/health",
+        "port": 80,
+        "protocol": "HTTP",
+        "interval": 30,
+        "timeout": 10,
+        "failureThreshold": 3,
+        "successThreshold": 1,
+        "initialDelay": 60
+      }
+    ]
+  },
+  "description": "Low-code platform for building internal tools and apps"
+}

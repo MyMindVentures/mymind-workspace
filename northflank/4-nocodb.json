@@ -1,0 +1,60 @@
+{
+  "apiVersion": "v1",
+  "spec": {
+    "kind": "CombinedService",
+    "name": "nocodb",
+    "billing": {
+      "deploymentPlan": "nf-compute-20"
+    },
+    "deployment": {
+      "instances": 1,
+      "docker": {
+        "configType": "customCommand"
+      },
+      "internal": {
+        "id": "nocodb",
+        "branch": "master",
+        "projectType": "dockerfile",
+        "dockerfile": {
+          "buildEngine": "kaniko",
+          "dockerFilePath": "/container/Dockerfile.nocodb",
+          "dockerWorkDir": "/"
+        }
+      }
+    },
+    "ports": [
+      {
+        "name": "web",
+        "internalPort": 8080,
+        "public": true,
+        "protocol": "HTTP",
+        "security": {
+          "policies": []
+        },
+        "domains": []
+      }
+    ],
+    "runtimeEnvironment": {
+      "NC_DB": "pg://{{POSTGRES_HOST}}:5432?u={{POSTGRES_USER}}&p={{POSTGRES_PASSWORD}}&d=nocodb",
+      "NC_PUBLIC_URL": "https://{{SERVICE_DOMAIN}}",
+      "NC_AUTH_JWT_SECRET": "{{NC_JWT_SECRET}}",
+      "NC_INVITE_ONLY_SIGNUP": "false",
+      "NC_ADMIN_EMAIL": "admin@mymind.ventures",
+      "NC_ADMIN_PASSWORD": "{{NC_ADMIN_PASSWORD}}"
+    },
+    "healthChecks": [
+      {
+        "name": "http-health",
+        "path": "/api/v1/health",
+        "port": 8080,
+        "protocol": "HTTP",
+        "interval": 30,
+        "timeout": 10,
+        "failureThreshold": 3,
+        "successThreshold": 1,
+        "initialDelay": 30
+      }
+    ]
+  },
+  "description": "Smart spreadsheet with REST APIs - open-source Airtable alternative"
+}

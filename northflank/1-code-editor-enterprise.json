@@ -1,0 +1,68 @@
+{
+  "apiVersion": "v1",
+  "spec": {
+    "kind": "CombinedService",
+    "name": "code-editor-enterprise",
+    "billing": {
+      "deploymentPlan": "nf-compute-50"
+    },
+    "deployment": {
+      "instances": 1,
+      "docker": {
+        "configType": "customCommand"
+      },
+      "internal": {
+        "id": "code-editor-enterprise",
+        "branch": "master",
+        "projectType": "dockerfile",
+        "dockerfile": {
+          "buildEngine": "kaniko",
+          "dockerFilePath": "/container/Dockerfile.code-editor-enterprise",
+          "dockerWorkDir": "/"
+        }
+      },
+      "external": {
+        "imagePath": ""
+      }
+    },
+    "ports": [
+      {
+        "name": "web",
+        "internalPort": 3000,
+        "public": true,
+        "protocol": "HTTP",
+        "security": {
+          "policies": []
+        },
+        "domains": []
+      }
+    ],
+    "runtimeEnvironment": {
+      "GITHUB_TOKEN": "{{GITHUB_TOKEN}}",
+      "ANTHROPIC_API_KEY": "{{ANTHROPIC_API_KEY}}",
+      "OPENAI_API_KEY": "{{OPENAI_API_KEY}}",
+      "DOCKER_HOST": "tcp://build-engine:2375"
+    },
+    "buildSettings": {
+      "dockerfile": {
+        "buildEngine": "kaniko",
+        "dockerFilePath": "/container/Dockerfile.code-editor-enterprise",
+        "dockerWorkDir": "/"
+      }
+    },
+    "healthChecks": [
+      {
+        "name": "http-health",
+        "path": "/healthz",
+        "port": 3000,
+        "protocol": "HTTP",
+        "interval": 30,
+        "timeout": 10,
+        "failureThreshold": 3,
+        "successThreshold": 1,
+        "initialDelay": 30
+      }
+    ]
+  },
+  "description": "AI-powered VS Code with Copilot, Cline, MCP servers, and enterprise extensions"
+}

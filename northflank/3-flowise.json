@@ -1,0 +1,63 @@
+{
+  "apiVersion": "v1",
+  "spec": {
+    "kind": "CombinedService",
+    "name": "flowise",
+    "billing": {
+      "deploymentPlan": "nf-compute-50"
+    },
+    "deployment": {
+      "instances": 1,
+      "docker": {
+        "configType": "customCommand"
+      },
+      "internal": {
+        "id": "flowise",
+        "branch": "master",
+        "projectType": "dockerfile",
+        "dockerfile": {
+          "buildEngine": "kaniko",
+          "dockerFilePath": "/container/Dockerfile.flowise",
+          "dockerWorkDir": "/"
+        }
+      }
+    },
+    "ports": [
+      {
+        "name": "web",
+        "internalPort": 3000,
+        "public": true,
+        "protocol": "HTTP",
+        "security": {
+          "policies": []
+        },
+        "domains": []
+      }
+    ],
+    "runtimeEnvironment": {
+      "PORT": "3000",
+      "FLOWISE_USERNAME": "admin",
+      "FLOWISE_PASSWORD": "{{FLOWISE_PASSWORD}}",
+      "PASSPHRASE": "{{FLOWISE_PASSPHRASE}}",
+      "OPENAI_API_KEY": "{{OPENAI_API_KEY}}",
+      "ANTHROPIC_API_KEY": "{{ANTHROPIC_API_KEY}}",
+      "DATABASE_PATH": "/root/.flowise",
+      "APIKEY_PATH": "/root/.flowise",
+      "LOG_LEVEL": "info"
+    },
+    "healthChecks": [
+      {
+        "name": "http-health",
+        "path": "/api/v1/health",
+        "port": 3000,
+        "protocol": "HTTP",
+        "interval": 30,
+        "timeout": 10,
+        "failureThreshold": 3,
+        "successThreshold": 1,
+        "initialDelay": 30
+      }
+    ]
+  },
+  "description": "Visual AI workflow orchestrator - build LLM chains and agents with drag-and-drop"
+}
