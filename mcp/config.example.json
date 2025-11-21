@@ -1,0 +1,89 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspaces/alpine-3"],
+      "disabled": false
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "disabled": false
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION": "${POSTGRES_CONNECTION_STRING}"
+      },
+      "disabled": false
+    },
+    "docker": {
+      "command": "node",
+      "args": ["/workspaces/alpine-3/mcp/servers/docker-mcp.js"],
+      "env": {
+        "DOCKER_HOST": "${DOCKER_HOST}"
+      },
+      "disabled": false
+    },
+    "doppler": {
+      "command": "node",
+      "args": ["/workspaces/alpine-3/mcp/servers/doppler-mcp.js"],
+      "env": {
+        "DOPPLER_TOKEN": "${DOPPLER_TOKEN}"
+      },
+      "disabled": false
+    },
+    "northflank": {
+      "command": "node",
+      "args": ["/workspaces/alpine-3/mcp/servers/northflank-mcp.js"],
+      "env": {
+        "NORTHFLANK_API_TOKEN": "${NORTHFLANK_API_TOKEN}"
+      },
+      "disabled": false
+    },
+    "postman": {
+      "command": "node",
+      "args": ["/workspaces/alpine-3/mcp/servers/postman-mcp.js"],
+      "env": {
+        "POSTMAN_API_KEY": "${POSTMAN_API_KEY}"
+      },
+      "disabled": false
+    },
+    "n8n": {
+      "command": "node",
+      "args": ["/workspaces/alpine-3/mcp/servers/n8n-mcp.js"],
+      "env": {
+        "N8N_API_URL": "${N8N_API_URL}",
+        "N8N_API_KEY": "${N8N_API_KEY}"
+      },
+      "disabled": false
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "disabled": false
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "disabled": false
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "disabled": false
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "disabled": false
+    }
+  }
+}
