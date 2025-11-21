@@ -1,0 +1,42 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install git and build dependencies
+RUN apk add --no-cache git python3 make g++
+
+# Clone and build Flowise
+RUN git clone https://github.com/FlowiseAI/Flowise.git . \
+    && npm install -g pnpm \
+    && pnpm install \
+    && pnpm build
+
+# Create non-root user
+RUN addgroup -g 1001 flowise \
+    && adduser -D -u 1001 -G flowise flowise \
+    && chown -R flowise:flowise /app
+
+USER flowise
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV DATABASE_TYPE=sqlite
+ENV DATABASE_PATH=/app/.flowise
+ENV APIKEY_PATH=/app/.flowise
+ENV LOG_PATH=/app/.flowise/logs
+ENV SECRETKEY_PATH=/app/.flowise
+ENV FLOWISE_USERNAME=admin
+ENV FLOWISE_PASSWORD=admin123
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+
+LABEL org.opencontainers.image.title="Flowise AI"
+LABEL org.opencontainers.image.description="Visual AI agent builder with LangChain"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="ai-tools"
+
+CMD ["pnpm", "start"]

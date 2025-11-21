@@ -1,0 +1,29 @@
+FROM nocodb/nocodb:latest
+
+USER root
+
+# Add healthcheck and proper labels
+RUN apk add --no-cache curl
+
+USER 1000
+
+WORKDIR /usr/app/nocodb
+
+EXPOSE 8080
+
+ENV NC_DB=pg://postgres:5432?u=nocodb&p=password&d=nocodb
+ENV NC_AUTH_JWT_SECRET=change-me-in-production
+ENV NC_PUBLIC_URL=https://nocodb.example.com
+ENV NC_DISABLE_TELE=true
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+
+LABEL org.opencontainers.image.title="NocoDB"
+LABEL org.opencontainers.image.description="Open source Airtable alternative"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="database"
+
+CMD ["node", "docker/index.js"]

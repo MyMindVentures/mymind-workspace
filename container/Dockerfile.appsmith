@@ -1,0 +1,31 @@
+FROM appsmith/appsmith-ce:latest
+
+USER root
+
+# Add healthcheck utilities
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+USER appsmith
+
+WORKDIR /opt/appsmith
+
+EXPOSE 80 443
+
+ENV APPSMITH_MONGODB_URI=mongodb://mongodb:27017/appsmith
+ENV APPSMITH_REDIS_URL=redis://redis:6379
+ENV APPSMITH_ENCRYPTION_PASSWORD=change-me-in-production
+ENV APPSMITH_ENCRYPTION_SALT=change-me-in-production
+ENV APPSMITH_SUPERVISOR_PASSWORD=change-me-in-production
+ENV APPSMITH_DISABLE_TELEMETRY=true
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:80/api/v1/health || exit 1
+
+LABEL org.opencontainers.image.title="Appsmith"
+LABEL org.opencontainers.image.description="Open source framework for building dashboards and admin panels"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="low-code"
+
+CMD ["/opt/appsmith/entrypoint.sh"]

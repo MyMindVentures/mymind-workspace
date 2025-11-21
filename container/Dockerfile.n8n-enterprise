@@ -1,0 +1,57 @@
+FROM n8nio/n8n:latest
+
+USER root
+
+# Install Python and AI libraries
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    python3-dev \
+    && pip3 install --no-cache-dir \
+    openai \
+    anthropic \
+    langchain \
+    langchain-openai \
+    langchain-anthropic \
+    chromadb \
+    qdrant-client \
+    faiss-cpu \
+    && apk del build-base python3-dev
+
+# Install n8n community nodes for AI/LangChain
+RUN cd /usr/local/lib/node_modules/n8n && \
+    npm install \
+    n8n-nodes-langchain \
+    @n8n/n8n-nodes-langchain \
+    n8n-nodes-openai \
+    n8n-nodes-anthropic
+
+# Configure n8n with PostgreSQL and proper settings
+ENV N8N_BASIC_AUTH_ACTIVE=false
+ENV N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+ENV N8N_LOG_LEVEL=info
+ENV N8N_LOG_OUTPUT=console
+ENV EXECUTIONS_DATA_SAVE_ON_ERROR=all
+ENV EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
+ENV EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS=true
+ENV N8N_METRICS=true
+ENV N8N_DIAGNOSTICS_ENABLED=false
+
+USER node
+
+WORKDIR /home/node
+
+EXPOSE 5678
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5678/healthz || exit 1
+
+LABEL org.opencontainers.image.title="Enterprise n8n"
+LABEL org.opencontainers.image.description="Workflow automation with AI capabilities (LangChain, OpenAI, Anthropic)"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="automation"
+
+CMD ["n8n"]

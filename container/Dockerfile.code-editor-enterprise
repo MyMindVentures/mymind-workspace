@@ -1,0 +1,78 @@
+FROM gitpod/openvscode-server:latest
+
+USER root
+
+# Install Node.js 20, Python 3, build tools, and CLI tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    python3 \
+    python3-pip \
+    build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && curl -Ls https://cli.doppler.com/install.sh | sh \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install MCP SDK globally
+RUN npm install -g @modelcontextprotocol/sdk
+
+# Install AI development tools
+RUN pip3 install --no-cache-dir \
+    aider-chat \
+    fabric-ai \
+    openai \
+    anthropic \
+    langchain \
+    langchain-openai \
+    langchain-anthropic
+
+# Pre-install essential VS Code extensions
+RUN --mount=type=secret,id=GITHUB_TOKEN \
+    code-server --install-extension GitHub.copilot \
+    && code-server --install-extension GitHub.copilot-chat \
+    && code-server --install-extension saoudrizwan.claude-dev \
+    && code-server --install-extension Continue.continue \
+    && code-server --install-extension ms-python.python \
+    && code-server --install-extension dbaeumer.vscode-eslint \
+    && code-server --install-extension esbenp.prettier-vscode \
+    && code-server --install-extension eamodio.gitlens \
+    && code-server --install-extension ms-vscode.vscode-typescript-next \
+    && code-server --install-extension formulahendry.code-runner \
+    && code-server --install-extension streetsidesoftware.code-spell-checker \
+    && code-server --install-extension bradlc.vscode-tailwindcss \
+    && code-server --install-extension Prisma.prisma \
+    && code-server --install-extension GitHub.vscode-pull-request-github \
+    && code-server --install-extension mongodb.mongodb-vscode
+
+# Configure MCP servers
+COPY mcp/config.example.json /home/workspace/.config/Code/User/mcp.json
+COPY mcp/servers /home/workspace/.config/mcp-servers
+
+# Set proper permissions
+RUN chown -R openvscode-server:openvscode-server /home/workspace/.config
+
+USER openvscode-server
+
+WORKDIR /home/workspace
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
+
+LABEL org.opencontainers.image.title="Enterprise Code Editor"
+LABEL org.opencontainers.image.description="Browser-based VS Code with AI superpowers (Copilot, Cline, Continue)"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="development"
+
+CMD ["/bin/sh", "-c", "exec /usr/bin/openvscode-server --host 0.0.0.0 --port 3000 --connection-token ${CONNECTION_TOKEN:-}"]

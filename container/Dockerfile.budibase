@@ -1,0 +1,32 @@
+FROM budibase/budibase:latest
+
+USER root
+
+# Add healthcheck utilities
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+USER 4001
+
+WORKDIR /app
+
+EXPOSE 80
+
+ENV BUDIBASE_ENVIRONMENT=PRODUCTION
+ENV COUCH_DB_URL=http://couchdb:5984
+ENV REDIS_URL=redis:6379
+ENV WORKER_URL=http://worker-service:4003
+ENV MINIO_URL=http://minio:9000
+ENV INTERNAL_API_KEY=change-me-in-production
+ENV JWT_SECRET=change-me-in-production
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:80/health || exit 1
+
+LABEL org.opencontainers.image.title="Budibase"
+LABEL org.opencontainers.image.description="Low-code platform for building internal tools"
+LABEL org.opencontainers.image.vendor="MyMind Ventures"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL io.mymind.tier="enterprise"
+LABEL io.mymind.category="low-code"
+
+CMD ["./server.sh"]
