@@ -1,0 +1,50 @@
+FROM gitpod/openvscode-server:latest AS base
+
+# OCI Standard Labels
+LABEL org.opencontainers.image.title="Code Editor" \
+      org.opencontainers.image.description="Browser-based VS Code IDE met Docker en DevContainer support" \
+      org.opencontainers.image.vendor="MyMind Ventures" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.source="https://github.com/mymindventures/alpine-workspace" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.created="2025-11-21T13:40:00Z" \
+      org.opencontainers.image.revision="main"
+
+# MyMind Custom Labels
+LABEL org.mymind.service="code-editor" \
+      org.mymind.environment="production" \
+      org.mymind.owner="mymindventures-team" \
+      org.mymind.repository="temporary-collection-21-11-2025" \
+      org.mymind.security.tier="high" \
+      org.mymind.deployment.strategy="blue-green" \
+      org.mymind.cleanup.retention="30d" \
+      org.mymind.sbom.attached="false"
+
+USER root
+
+# Install Docker CLI
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Doppler CLI
+RUN curl -Ls https://cli.doppler.com/install.sh | sh
+
+# Install Newman
+RUN npm install -g newman @northflank/cli@0.10.5
+
+# Configure no-password access
+RUN mkdir -p /home/openvscode-server/.config/code-server && \
+    echo "bind-addr: 0.0.0.0:3000\nauth: none\ncert: false" > /home/openvscode-server/.config/code-server/config.yaml && \
+    chown -R openvscode-server:openvscode-server /home/openvscode-server/.config
+
+USER openvscode-server
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/healthz || exit 1
+
+EXPOSE 3000
+
+CMD ["/home/.openvscode-server/bin/openvscode-server", "--host", "0.0.0.0", "--port", "3000", "--without-connection-token"]

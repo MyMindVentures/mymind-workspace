@@ -1,0 +1,50 @@
+FROM alpine:3.20
+
+# OCI Standard Labels
+LABEL org.opencontainers.image.title="Terminal Workspace" \
+      org.opencontainers.image.description="Command-line workspace met Doppler, Newman, Docker CLI, Git" \
+      org.opencontainers.image.vendor="MyMind Ventures" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.source="https://github.com/mymindventures/alpine-workspace" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.created="2025-11-21T13:40:00Z" \
+      org.opencontainers.image.revision="main"
+
+# MyMind Custom Labels
+LABEL org.mymind.service="terminal" \
+      org.mymind.environment="production" \
+      org.mymind.owner="mymindventures-team" \
+      org.mymind.repository="temporary-collection-21-11-2025" \
+      org.mymind.security.tier="standard" \
+      org.mymind.deployment.strategy="blue-green" \
+      org.mymind.cleanup.retention="30d" \
+      org.mymind.sbom.attached="false"
+
+# Install dependencies as root
+RUN apk add --no-cache \
+    curl \
+    bash \
+    git \
+    nodejs \
+    npm \
+    docker-cli \
+    gnupg \
+    shadow \
+    && adduser -D -u 1000 workspace
+
+# Install Doppler CLI
+RUN curl -Ls https://cli.doppler.com/install.sh | sh
+
+# Install Newman
+RUN npm install -g newman
+
+# Switch to non-root user
+USER workspace
+WORKDIR /home/workspace
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD ps aux | grep -v grep | grep -q bash || exit 1
+
+# Keep container running
+CMD ["tail", "-f", "/dev/null"]

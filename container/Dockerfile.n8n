@@ -1,0 +1,26 @@
+FROM n8nio/n8n:latest
+
+# OCI Standard Labels  
+LABEL org.opencontainers.image.title="n8n Workflow Automation" \
+      org.opencontainers.image.description="n8n workflow automation platform" \
+      org.opencontainers.image.vendor="MyMind Ventures" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.source="https://github.com/mymindventures/alpine-workspace" \
+      org.opencontainers.image.licenses="Sustainable Use License" \
+      org.opencontainers.image.created="2025-11-21T13:40:00Z" \
+      org.opencontainers.image.revision="main"
+
+# MyMind Custom Labels
+LABEL org.mymind.service="n8n" \
+      org.mymind.environment="production" \
+      org.mymind.owner="mymindventures-team" \
+      org.mymind.repository="temporary-collection-21-11-2025" \
+      org.mymind.security.tier="high" \
+      org.mymind.deployment.strategy="blue-green" \
+      org.mymind.cleanup.retention="30d" \
+      org.mymind.sbom.attached="false"
+
+# Already runs as non-root (node user)
+# Health check already included in base image
+
+USER node

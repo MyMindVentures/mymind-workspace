@@ -1,0 +1,32 @@
+FROM docker:27-dind
+
+# OCI Standard Labels
+LABEL org.opencontainers.image.title="Build Engine" \
+      org.opencontainers.image.description="Docker-in-Docker daemon voor container builds en DevContainers" \
+      org.opencontainers.image.vendor="MyMind Ventures" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.source="https://github.com/mymindventures/alpine-workspace" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.created="2025-11-21T13:40:00Z" \
+      org.opencontainers.image.revision="main"
+
+# MyMind Custom Labels
+LABEL org.mymind.service="build-engine" \
+      org.mymind.environment="production" \
+      org.mymind.owner="mymindventures-team" \
+      org.mymind.repository="temporary-collection-21-11-2025" \
+      org.mymind.security.tier="critical" \
+      org.mymind.deployment.strategy="blue-green" \
+      org.mymind.cleanup.retention="7d" \
+      org.mymind.sbom.attached="false"
+
+# Disable TLS for internal cluster communication
+ENV DOCKER_TLS_CERTDIR=""
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD docker info > /dev/null 2>&1 || exit 1
+
+EXPOSE 2375
+
+CMD ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock", "--tls=false"]
